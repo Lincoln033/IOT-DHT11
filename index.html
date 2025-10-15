@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Dashboard IoT</title>
@@ -31,7 +31,7 @@
 
         client.on("connect", () => {
             console.log("Conectado ao MQTT");
-            client.subscribe("senai/iot/dht11");
+            client.subscribe("senai/equipe");
         });
 
         client.on("message", (topic, message) => {
