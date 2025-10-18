@@ -7,6 +7,7 @@ body {
 h2, h3 {
     color:#ffffff
 }
+
 canvas {
     border: 2px solid #ffffff;
     border-radius: 10px;
@@ -14,11 +15,5 @@ canvas {
     padding: 10px;
     max-width: 800px;
     margin: 10px auto;
-}
-.container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
-    margin-top: 20px;
+    width: 35%;
 }
