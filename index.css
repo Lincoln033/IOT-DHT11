@@ -1,5 +1,7 @@
 body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     background-color: rgb(22, 22, 22);
+    text-align: center;
 }
 
 h2, h3 {
@@ -9,5 +11,14 @@ canvas {
     border: 2px solid #ffffff;
     border-radius: 10px;
     background-color:rgb(26, 26, 26);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    max-width: 650px;
+    margin: 15px auto;
+}
+.container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 20px;
 }
