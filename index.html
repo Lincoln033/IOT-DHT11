@@ -2,33 +2,66 @@
 <html>
 <head>
     <title>Dashboard IoT</title>
+
+    <link rel="stylesheet" href="index.css">
+
     <script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h2>Monitoramento DHT11</h2>
-    <canvas id="grafico" width="400" height="200"></canvas>
+
+    <!-- Agora há dois gráficos -->
+    <h3>Temperatura</h3>
+    <canvas id="graficoTemp" width="500" height="200"></canvas>
+
+    <h3>Umidade</h3>
+    <canvas id="graficoHum" width="500" height="200"></canvas>
 
     <script>
-
+        // Conexão MQTT
         const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
+        // Dados e rótulos
         const labels = [];
         const tempData = [];
         const humData = [];
 
-        const ctx = document.getElementById("grafico").getContext("2d");
-        const chart = new Chart(ctx, {
+        // === GRÁFICO 1: Temperatura ===
+        const ctxTemp = document.getElementById("graficoTemp").getContext("2d");
+        const chartTemp = new Chart(ctxTemp, {
             type: "line",
             data: {
                 labels: labels,
                 datasets: [
-                { label: "Temperatura (°C)",data: tempData, borderColor: "red", fill: false },
-                { label: "Umidade (%)",data: humData, borderColor: "blue", fill: false }
-            ]
-        }
+                    {
+                        label: "Temperatura (°C)",
+                        data: tempData,
+                        borderColor: "red",
+                        fill: false
+                    }
+                ]
+            }
         });
 
+        // === GRÁFICO 2: Umidade ===
+        const ctxHum = document.getElementById("graficoHum").getContext("2d");
+        const chartHum = new Chart(ctxHum, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Umidade (%)",
+                        data: humData,
+                        borderColor: "blue",
+                        fill: false
+                    }
+                ]
+            }
+        });
+
+        // === MQTT ===
         client.on("connect", () => {
             console.log("Conectado ao MQTT");
             client.subscribe("senai/equipe");
@@ -42,11 +75,16 @@
             tempData.push(data.temperatura);
             humData.push(data.umidade);
 
+            // Mantém apenas os últimos 20 valores
             if (labels.length > 20) {
-                labels.shift();tempData.shift();humData.shift();
+                labels.shift();
+                tempData.shift();
+                humData.shift();
             }
 
-            chart.update();
+            // Atualiza ambos os gráficos
+            chartTemp.update();
+            chartHum.update();
         });
     </script>
 </body>
