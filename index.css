@@ -20,6 +20,6 @@ canvas {
 }
 
 @media (max-width: 768px) {
-    canvas { width: 100%; }
-    div { flex-direction: column; }
+    div[style*="flex"] { flex-direction: column !important; }
+    canvas { width: 100% !important; }
 }
