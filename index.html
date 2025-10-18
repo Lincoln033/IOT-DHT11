@@ -14,11 +14,14 @@
 <body>
     <h2>Monitoramento DHT11</h2>
 
-    <h3>Temperatura</h3>
-    <canvas id="graficoTemp" width="400" height="200"></canvas>
+   <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
 
-    <h3>Umidade</h3>
-    <canvas id="graficoHum" width="400" height="200"></canvas>
+      <div><h3>Temperatura</h3>
+        <canvas id="graficoTemp"></canvas></div>
+        
+      <div><h3>Umidade</h3>
+        <canvas id="graficoHum"></canvas></div>
+    </div>
 
     <script>
         // Conexão MQTT
