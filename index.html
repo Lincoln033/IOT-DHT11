@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- ADICIONE -->
     <title>Dashboard IoT</title>
-
     <link rel="stylesheet" href="index.css">
-
     <script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h2>Monitoramento DHT11</h2>
+    
+    <div class="status" id="status">🔴 Desconectado</div> <!-- ADICIONE -->
 
     <h3>Temperatura</h3>
     <canvas id="graficoTemp" width="400" height="200"></canvas>
@@ -18,72 +20,41 @@
     <canvas id="graficoHum" width="400" height="200"></canvas>
 
     <script>
-        // Conexão MQTT
+        // SEU CÓDIGO + 5 LINHAS
         const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+        const labels = []; const tempData = []; const humData = [];
 
-        // Dados e rótulos
-        const labels = [];
-        const tempData = [];
-        const humData = [];
-
-        // *** GRÁFICO 1 ***
         const ctxTemp = document.getElementById("graficoTemp").getContext("2d");
         const chartTemp = new Chart(ctxTemp, {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Temperatura (°C)",
-                        data: tempData,
-                        borderColor: "red",
-                        fill: false
-                    }
-                ]
-            }
+            type: "line", data: { labels, datasets: [{ label: "Temperatura (°C)", data: tempData, borderColor: "red", fill: false }] },
+            options: { responsive: true } // ADICIONE
         });
 
-        //*** GRÁFICO 2 ***
         const ctxHum = document.getElementById("graficoHum").getContext("2d");
         const chartHum = new Chart(ctxHum, {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Umidade (%)",
-                        data: humData,
-                        borderColor: "blue",
-                        fill: false
-                    }
-                ]
-            }
+            type: "line", data: { labels, datasets: [{ label: "Umidade (%)", data: humData, borderColor: "blue", fill: false }] },
+            options: { responsive: true } // ADICIONE
         });
 
-        //  MQTT
         client.on("connect", () => {
             console.log("Conectado ao MQTT");
+            document.getElementById("status").textContent = "🟢 Conectado"; // ADICIONE
             client.subscribe("senai/equipe");
         });
 
         client.on("message", (topic, message) => {
-            const data = JSON.parse(message.toString());
-            const time = new Date().toLocaleTimeString();
+            try { // ADICIONE try-catch
+                const data = JSON.parse(message.toString());
+                const time = new Date().toLocaleTimeString();
 
-            labels.push(time);
-            tempData.push(data.temperatura);
-            humData.push(data.umidade);
-            
-            // Mantém apenas os últimos 20 pontos de dados
-            if (labels.length > 20) {
-                labels.shift();
-                tempData.shift();
-                humData.shift();
-            }
+                labels.push(time); tempData.push(data.temperatura); humData.push(data.umidade);
+                
+                if (labels.length > 20) { labels.shift(); tempData.shift(); humData.shift(); }
 
-            // Atualiza os gráficos
-            chartTemp.update();
-            chartHum.update();
+                chartTemp.update('none'); // ADICIONE 'none' para suave
+                chartHum.update('none');
+                
+            } catch(e) { console.error("JSON inválido"); }
         });
     </script>
 </body>
