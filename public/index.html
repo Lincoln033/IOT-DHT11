@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IoT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white transition-colors duration-300" id="body">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Monitoramento DHT11</h2>
+            <button id="themeToggle" class="bg-gray-700 p-2 rounded">Toggle Theme</button>
+        </div>
+
+        <!-- Formulário de Login -->
+        <div id="login" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+            <div class="bg-gray-700 p-6 rounded-lg">
+                <h3 class="text-xl mb-4">Login</h3>
+                <input type="text" id="username" placeholder="Usuário" class="w-full p-2 mb-2 bg-gray-600 rounded">
+                <input type="password" id="password" placeholder="Senha" class="w-full p-2 mb-4 bg-gray-600 rounded">
+                <button onclick="login()" class="w-full p-2 bg-blue-500 rounded">Entrar</button>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg mb-2">Temperatura</h3>
+                <canvas id="graficoTemp"></canvas>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg shadow-lg">
+                <h3 class="text-lg mb-2">Umidade</h3>
+                <canvas id="graficoHum"></canvas>
+            </div>
+        </div>
+
+        <!-- Botões de Comando -->
+        <div class="mt-4">
+            <button id="ligarLED" onclick="sendCommand('ligarLED')" class="bg-green-500 p-2 rounded mr-2">Ligar LED</button>
+            <button id="desligarLED" onclick="sendCommand('desligarLED')" class="bg-red-500 p-2 rounded">Desligar LED</button>
+        </div>
+    </div>
+
+    <script>
+    // Toggle Dark/Light Mode
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        document.getElementById('body').classList.toggle('bg-gray-900');
+        document.getElementById('body').classList.toggle('bg-gray-100');
+        document.getElementById('body').classList.toggle('text-white');
+        document.getElementById('body').classList.toggle('text-black');
+    });
+
+    // Login com Backend
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        console.log('Tentando login com:', { username, password });
+
+        fetch('http://localhost:3001/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        })
+        .then(response => {
+            console.log('Resposta do servidor:', response);
+            if (!response.ok) throw new Error('Resposta inválida: ' + response.statusText);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados recebidos:', data);
+            if (data.success) {
+                document.getElementById('login').classList.add('hidden');
+            } else {
+                alert('Usuário ou senha inválidos');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao conectar ao servidor:', error);
+            alert('Erro ao conectar ao servidor. Verifique se http://localhost:3001 está rodando.');
+            // Fallback local
+            if (username === 'admin' && password === '1234') {
+                document.getElementById('login').classList.add('hidden');
+            }
+        });
+    }
+    document.getElementById('login').classList.remove('hidden');
+
+    // Conexão MQTT
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+    const labels = [], tempData = [], humData = [];
+
+    const ctxTemp = document.getElementById("graficoTemp").getContext("2d");
+    const chartTemp = new Chart(ctxTemp, {
+        type: "line",
+        data: { labels, datasets: [{ label: "Temperatura (°C)", data: tempData, borderColor: "red", fill: false }] }
+    });
+
+    const ctxHum = document.getElementById("graficoHum").getContext("2d");
+    const chartHum = new Chart(ctxHum, {
+        type: "line",
+        data: { labels, datasets: [{ label: "Umidade (%)", data: humData, borderColor: "blue", fill: false }] }
+    });
+
+    client.on("connect", () => {
+        console.log("Conectado ao MQTT");
+        client.subscribe("senai/equipe");
+    });
+
+    client.on("message", (topic, message) => {
+        const data = JSON.parse(message.toString());
+        const time = new Date().toLocaleTimeString();
+
+        labels.push(time);
+        tempData.push(data.temperatura);
+        humData.push(data.umidade);
+        
+        if (labels.length > 20) {
+            labels.shift();
+            tempData.shift();
+            humData.shift();
+        }
+
+        chartTemp.update();
+        chartHum.update();
+    });
+
+    // Enviar Comandos MQTT com Feedback
+    function sendCommand(command) {
+        client.publish("senai/controles", command);
+        const button = document.getElementById(command === 'ligarLED' ? 'ligarLED' : 'desligarLED');
+        button.classList.add('bg-opacity-50');
+        setTimeout(() => button.classList.remove('bg-opacity-50'), 1000);
+    }
+</script>
+</body>
+</html>
