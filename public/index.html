@@ -15,7 +15,7 @@
     <div class="container mx-auto p-4">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold">Monitoramento DHT11</h2>
-            <button id="themeToggle" class="bg-gray-700 p-2 rounded">Toggle Theme</button>
+            <button id="themeToggle" class="bg-gray-700 p-2 rounded">Dark/White</button>
         </div>
 
         <!-- Formulário de Login -->
@@ -41,11 +41,12 @@
         </div>
 
         <!-- Botões de Comando -->
-        <div class="mt-4">
-            <button id="ligarLED" onclick="sendCommand('ligarLED')" class="bg-green-500 p-2 rounded mr-2">Ligar LED</button>
-            <button id="desligarLED" onclick="sendCommand('desligarLED')" class="bg-red-500 p-2 rounded">Desligar LED</button>
-        </div>
-    </div>
+        <div id="alert" class="hidden bg-red-500 text-white p-4 rounded mb-4" role="alert">
+    Atenção: Temperatura alta! Buzzer ativado.
+</div>
+<div class="mt-4">
+    <button id="desligarBuzzer" onclick="sendCommand('desligarBuzzer')" class="bg-yellow-500 p-2 rounded mr-2">Desligar Buzzer</button>
+</div>
 
     <script>
     // Toggle Dark/Light Mode
@@ -53,7 +54,7 @@
         document.getElementById('body').classList.toggle('bg-gray-900');
         document.getElementById('body').classList.toggle('bg-gray-100');
         document.getElementById('body').classList.toggle('text-white');
-        document.getElementById('body').classList.toggle('text-black');
+        document.getElementById('body').classList.toggle('text-white');
     });
 
     // Login com Backend
@@ -62,7 +63,7 @@
         const password = document.getElementById('password').value;
         console.log('Tentando login com:', { username, password });
 
-        fetch('http://localhost:3001/api/login', {
+        fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
