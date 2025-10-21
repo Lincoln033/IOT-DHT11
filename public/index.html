@@ -54,7 +54,7 @@
         document.getElementById('body').classList.toggle('bg-gray-900');
         document.getElementById('body').classList.toggle('bg-gray-100');
         document.getElementById('body').classList.toggle('text-white');
-        document.getElementById('body').classList.toggle('text-white');
+        document.getElementById('body').classList.toggle('text-black');
     });
 
     // Login com Backend
@@ -133,11 +133,14 @@
 
     // Enviar Comandos MQTT com Feedback
     function sendCommand(command) {
-        client.publish("senai/controles", command);
-        const button = document.getElementById(command === 'ligarLED' ? 'ligarLED' : 'desligarLED');
+    console.log("Enviando comando:", command); // Depuração
+    client.publish("senai/controles", command);
+    const button = document.getElementById(command === 'desligarBuzzer' ? 'desligarBuzzer' : null);
+    if (button) {
         button.classList.add('bg-opacity-50');
         setTimeout(() => button.classList.remove('bg-opacity-50'), 1000);
     }
+}
 </script>
 </body>
 </html>
